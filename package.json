@@ -1,17 +1,25 @@
 {
   "name": "mock-interview-ai-server",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/index.ts",
   "scripts": {
     "build": "pkgroll",
     "dev": "tsx watch ./src/index.ts",
     "start": "tsx ./src/index.ts",
     "type-check": "tsc --noEmit"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": [
+    "mock",
+    "interview",
+    "ai",
+    "openai"
+  ],
+  "author": {
+    "name": "Diogo Cardoso",
+    "email": "hi@diogocardoso.dev"
+  },
+  "license": "MIT",
+  "description": "Mock interview AI server",
   "dependencies": {
     "@openai/realtime-api-beta": "github:openai/openai-realtime-api-beta",
     "dotenv": "^16.4.5",
