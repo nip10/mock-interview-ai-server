@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 22
       - name: Install dependencies
-        run: npm install --production
+        run: npm install
       - name: Generate build
         run: npm run build
       # - name: Run migrations
