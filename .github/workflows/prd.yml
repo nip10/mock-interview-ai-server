@@ -1,0 +1,83 @@
+name: Azure Production Deployment
+
+on:
+  push:
+    branches:
+      - develop
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install --production
+      - name: Generate build
+        run: npm run build
+      # - name: Run migrations
+      #   run: npm run migrate:dev
+      #   env:
+      #     NODE_ENV: development
+      #     DB_HOST: ${{ secrets.DB_HOST_STAGING }}
+      #     DB_PORT: ${{ secrets.DB_PORT }}
+      #     DB_USERNAME: ${{ secrets.DB_USERNAME_STAGING }}
+      #     DB_PASSWORD: ${{ secrets.DB_PASSWORD_STAGING }}
+      #     DB_DATABASE: ${{ secrets.DB_DATABASE }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            diogowm/mock-interview-api
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          context: .
+          secrets: |
+            "NODE_ENV=${{ secrets.NODE_ENV }}"
+            "PORT=${{ secrets.PORT }}"
+            "BASE_URL=${{ secrets.BASE_URL }}"
+            "DB_HOST=${{ secrets.DB_HOST }}"
+            "DB_PORT=${{ secrets.DB_PORT }}"
+            "DB_USERNAME=${{ secrets.DB_USERNAME }}"
+            "DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
+            "DB_DATABASE=${{ secrets.DB_DATABASE }}"
+            "MJ_APIKEY_PUBLIC=${{ secrets.MJ_APIKEY_PUBLIC }}"
+            "MJ_APIKEY_PRIVATE=${{ secrets.MJ_APIKEY_PRIVATE }}"
+            "SENTRY_DSN=${{ secrets.SENTRY_DSN }}"
+            "STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}"
+            "STRIPE_PUBLISHABLE_KEY=${{ secrets.STRIPE_PUBLISHABLE_KEY }}"
+            "SUPABASE_PROJECT_ID=${{ secrets.SUPABASE_PROJECT_ID }}"
+            "SUPABASE_JWT_SECRET=${{ secrets.SUPABASE_JWT_SECRET }}"
+            "SUPABASE_SERVICE_KEY=${{ secrets.SUPABASE_SERVICE_KEY }}"
+            "POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}"
+            "GH_TOKEN=${{ secrets.GH_TOKEN }}"
+            "AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}"
