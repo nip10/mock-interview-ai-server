@@ -5,12 +5,12 @@ import { IncomingMessage } from "http";
 
 export class RealtimeRelay {
   apiKey: string;
-  sockets: WeakMap<object, any>;
+  // sockets: WeakMap<object, any>;
   wss: Server.Server<typeof Server, typeof IncomingMessage>;
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
-    this.sockets = new WeakMap();
+    // this.sockets = new WeakMap();
     this.wss = null;
   }
 
@@ -38,7 +38,11 @@ export class RealtimeRelay {
 
     // Instantiate new client
     this.log(`Connecting with key "${this.apiKey.slice(0, 3)}..."`);
-    const client = new RealtimeClient({ apiKey: this.apiKey });
+    const client = new RealtimeClient({
+      apiKey: this.apiKey,
+      url: "wss://mock-interview-app-v2-ai.openai.azure.com/openai/realtime?api-version=2024-10-01-preview&deployment=gpt-4o-realtime-preview",
+      debug: true,
+    });
 
     // Relay: OpenAI Realtime API Event -> Browser Event
     client.realtime.on("server.*", (event) => {

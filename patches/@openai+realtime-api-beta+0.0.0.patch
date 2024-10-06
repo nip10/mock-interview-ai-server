@@ -1,0 +1,20 @@
+diff --git a/node_modules/@openai/realtime-api-beta/lib/api.js b/node_modules/@openai/realtime-api-beta/lib/api.js
+index 23b6c80..eaec22e 100644
+--- a/node_modules/@openai/realtime-api-beta/lib/api.js
++++ b/node_modules/@openai/realtime-api-beta/lib/api.js
+@@ -113,13 +113,14 @@ export class RealtimeAPI extends RealtimeEventHandler {
+       const wsModule = await import(/* webpackIgnore: true */ moduleName);
+       const WebSocket = wsModule.default;
+       const ws = new WebSocket(
+-        'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01',
++       `${this.url}`,
+         [],
+         {
+           finishRequest: (request) => {
+             // Auth
+             request.setHeader('Authorization', `Bearer ${this.apiKey}`);
+             request.setHeader('OpenAI-Beta', 'realtime=v1');
++            request.setHeader("api-key", this.apiKey);
+             request.end();
+           },
+         },
